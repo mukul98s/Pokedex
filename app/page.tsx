@@ -6,12 +6,36 @@ import { ChevronLeftIcon, ChevronRightIcon, Search, X } from "lucide-react";
 import Heading1 from "@/components/typography/Heading1";
 import { PageProps } from "@/.next/types/app/page";
 
+import { Metadata } from "next";
+import { cache } from "react";
+
+const getCachedPokemons = cache(getPokemons);
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const { query, page } = await searchParams;
+
+  const {pokemons} = await getCachedPokemons({
+    page: page ? parseInt(page) : 1,
+    query: query || "",
+  });
+
+  return {
+    title: "Pokédex",
+    description: "Pokédex - Search for your favorite Pokémon",
+    openGraph: {
+      title: "Pokédex",
+      description: "Pokédex - Search for your favorite Pokémon  ",
+      images: [{ url: pokemons[0].image }],
+    },
+  };
+}
+
 export default async function Home({
   searchParams,
 }: PageProps) {
   const {query, page} = await searchParams;
 
-  const { pokemons, nextPage, previousPage } = await getPokemons({
+  const { pokemons, nextPage, previousPage } = await getCachedPokemons({
     page: page ? parseInt(page) : 1,
     query: query || "",
   });
