@@ -1,27 +1,55 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 
+import { PageProps } from "@/.next/types/app/pokemon/[id]/page";
 import { getPokemonData, getPokemonSpecies } from "@/app/lib/pokemon";
 import PokemonAbilities from "@/components/pokemon/Abilities";
 import PokemonEvolution from "@/components/pokemon/Evolution";
+import PokemonLocationAreas from "@/components/pokemon/LocationAreas";
 import PokemonMoves from "@/components/pokemon/Moves";
 import PokemonStats from "@/components/pokemon/Stats";
 import Heading1 from "@/components/typography/Heading1";
 import Heading2 from "@/components/typography/Heading2";
-import { typeColors } from "@/styles/pokemonTypeColors";
 import Paragraph from "@/components/typography/Paragraph";
+import { typeColors } from "@/styles/pokemonTypeColors";
 import clsx from "clsx";
-import PokemonLocationAreas from "@/components/pokemon/LocationAreas";
-import { PageProps } from "@/.next/types/app/pokemon/[id]/page";
+
+// Create cached versions of your data fetching functions
+const getCachedPokemonData = cache(getPokemonData);
+const getCachedPokemonSpecies = cache(getPokemonSpecies);
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id: pokemonId } = await params;
+  
+  // Use the cached version of the function
+  const pokemon = await getCachedPokemonData(pokemonId);
+
+  const pokemonName = pokemon ? pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1) : '';
+  const description = pokemon ? `Stats and details for #${pokemon.id} ${pokemonName}` : 'Pokédex';
+  const image = pokemon ? pokemon.sprites.other['official-artwork'].front_default : '';
+  const title = pokemon ? `#${pokemon.id} ${pokemonName} | Pokédex` : 'Pokédex';
+  
+  return {
+    title: title,
+    description: description,
+    openGraph: {
+      title: title,
+      description: description,
+      images: [{ url: image }]
+    }
+  };
+}
 
 export default async function PokemonDetails({ params }: PageProps) {
   const { id: pokemonId } = await params;
 
   const [pokemon, species] = await Promise.all([
-    getPokemonData(pokemonId),
-    getPokemonSpecies(pokemonId),
+    getCachedPokemonData(pokemonId),
+    getCachedPokemonSpecies(pokemonId),
   ]);
 
   if (!pokemon || !species) {
