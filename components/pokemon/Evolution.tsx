@@ -76,7 +76,7 @@ export default function PokemonEvolution({ speciesUrl }: Props) {
         <Paragraph>No evolution chain found</Paragraph>
       )}
 
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-col md:flex-row md:flex-wrap items-center gap-4">
         {evolutionChain.map((pokemon, index) => (
           <Fragment key={pokemon.id}>
             <Link href={`/pokemon/${pokemon.id}`} className="group text-center">
@@ -92,7 +92,7 @@ export default function PokemonEvolution({ speciesUrl }: Props) {
               <Paragraph className="capitalize">{pokemon.name}</Paragraph>
             </Link>
             {index < evolutionChain.length - 1 && (
-              <ChevronRight className="h-6 w-6 text-gray-400" />
+              <ChevronRight className="h-6 w-6 text-gray-400 rotate-90 md:rotate-0" />
             )}
           </Fragment>
         ))}
