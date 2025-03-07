@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { PageProps } from "@/.next/types/app/pokemon/[id]/page";
-import { getPokemonData, getPokemonSpecies } from "@/app/lib/pokemon";
+import { getPokemonData, getPokemons, getPokemonSpecies } from "@/app/lib/pokemon";
 import PokemonAbilities from "@/components/pokemon/Abilities";
 import PokemonEvolution from "@/components/pokemon/Evolution";
 import PokemonLocationAreas from "@/components/pokemon/LocationAreas";
@@ -21,6 +21,15 @@ import clsx from "clsx";
 // Create cached versions of your data fetching functions
 const getCachedPokemonData = cache(getPokemonData);
 const getCachedPokemonSpecies = cache(getPokemonSpecies);
+const getCachedAllPokemon = cache(getPokemons);
+
+// Generate static paths for all Pokemon (adjust the range as needed)
+export async function generateStaticParams() {
+  const allPokemon = await getCachedAllPokemon({page: 1, query: ""});
+  return Array.from({ length: allPokemon.total }, (_, i) => ({
+    id: String(i + 1),
+  }));
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id: pokemonId } = await params;
